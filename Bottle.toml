@@ -1,0 +1,14 @@
+[package]
+name = "bottle"
+version = "0.1.0-prealpha"
+authors = ["Kevin Stenerson <kevin@reflexionhealth.com>"]
+repository = "https://github.com/gobottle/bottle"
+license = "BSD-3-Clause"
+exclude = ["atom/**/*", ".go/**/*"]
+
+[dependencies]
+"encoding/toml" = { import = "github.com/naoina/toml" }
+
+[[bin]]
+name = "bottle"
+path = "main.go"

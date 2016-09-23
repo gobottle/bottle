@@ -1,0 +1,26 @@
+{
+  "name": "gobottle",
+  "version": "0.1.0",
+  "description": "Autocomplete, linting, and formatting for Go files using gobottle's bottle command",
+  "repository": {"type": "git", "url": "https://github.com/gobottle/atom-plugin"},
+  "license" : "BSD-3-Clause",
+  "keywords": [
+    "gobottle", "bottle",
+
+    "go", "golang",
+    "gocode",
+    "goimports",
+
+    "autocomplete",
+    "autocomplete-plus",
+    "linter", "lint"
+  ],
+  "main": "./lib/main",
+  "engines": {"atom": ">=1.0.0 <2.0.0"},
+  "dependencies": {"atom-linter": "^5.0.1", "atom-package-deps": "^4.0.1"},
+  "package-deps": ["autocomplete-plus", "linter"],
+  "providedServices": {
+    "linter": {"versions": {"1.0.0": "provideLinter"}},
+    "autocomplete.provider": {"versions": {"2.0.0": "provideAutocomplete"}}
+  }
+}

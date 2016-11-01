@@ -96,7 +96,7 @@ func main() {
 		var pkgroot, cfgpath string
 		args := flag.Args()
 		if len(args) > 1 {
-			sh.Stderr(": too many positional arguments (max 1)")
+			sh.Stderr("bottle: too many positional arguments (max 1)\n")
 			sh.Exit(1)
 		} else if len(args) == 1 {
 			path := args[0]
@@ -186,10 +186,11 @@ func main() {
 		/*  Lock the workspace before screwing around with it  */
 		acquiredLock := make(chan bool)
 		workspaceMutex, err := filemutex.New(sh.Path(workspace, ".workspace.lock"))
+		if err != nil {
+			sh.Stderr("bottle: " + err.Error() + "\n")
+			sh.Exit(1)
+		}
 		{
-			if err != nil {
-				sh.Stderr("bottle: " + err.Error())
-			}
 			go func() {
 				workspaceMutex.Lock()
 				acquiredLock <- true
@@ -197,7 +198,7 @@ func main() {
 
 			select {
 			case <-time.After(3 * time.Second):
-				sh.Stderr("bottle: timed-out waiting for lock on directory")
+				sh.Stderr("bottle: timed-out waiting for lock on directory\n")
 				sh.Exit(1)
 				// TODO: try to delete lock file if it is very old
 			case <-acquiredLock:
@@ -343,7 +344,7 @@ func main() {
 		/*  Run the tool  */
 		shellsplit := regexp.MustCompile(`"[^"]*"|\'[^\']*\'|[^"\'\s]+`).FindAllString(tool, -1)
 		if len(shellsplit) == 0 {
-			sh.Stderr("bottle: unable to split the tool's name and arguments")
+			sh.Stderr("bottle: unable to split the tool's name and arguments\n")
 			sh.Exit(1)
 		}
 
@@ -437,7 +438,7 @@ func main() {
 			} else if sh.IsRegularFile(workspace + "/bin/" + cfg.Package.Name) {
 				sh.Cp(binprefix+cfg.Package.Name, outfile)
 			} else {
-				sh.Stderr("bottle: no output exists that can be written to a file")
+				sh.Stderr("bottle: no output exists that can be written to a file\n")
 				sh.Exit(1)
 			}
 		} else if len(outdir) > 0 {
@@ -477,6 +478,12 @@ func syncFiles(src, dest string, opts syncOptions) []string {
 		args = append(args, `--dry-run`)
 	}
 	args = append(args, src+"/", dest)
+
+	if !opts.Dryrun {
+		if !sh.Exists(dest) {
+			sh.MkdirParents(dest, 0755)
+		}
+	}
 
 	output := sh.Cmd(`rsync`, args...).Run()
 	paths := strings.Split(strings.TrimSpace(output), "\n")

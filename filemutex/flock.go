@@ -7,6 +7,7 @@
 package filemutex
 
 import (
+	"fmt"
 	"sync"
 	"syscall"
 )
@@ -25,7 +26,7 @@ type FileMutex struct {
 func New(filename string) (*FileMutex, error) {
 	fd, err := syscall.Open(filename, syscall.O_CREAT|syscall.O_RDONLY, mkdirPerm)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf(`filemutex: error opening "%s": %s`, filename, err)
 	}
 	return &FileMutex{fd: fd}, nil
 }

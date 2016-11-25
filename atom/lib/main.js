@@ -22,10 +22,10 @@ function run(cmd, args = [], options = {}) {
   });
 }
 
-function which(context) {
-  return run('bottle', ['--which', context.path]).then((output) => {
+function which(path) {
+  return run('bottle', ['which', '--root', path]).then((output) => {
     const pkginfo = /^\[(.+)\] (.+)/.exec(output);
-    if (pkginfo) { context.root = pkginfo[2] }
+    if (pkginfo) return pkginfo[2];
   });
 }
 
@@ -40,9 +40,9 @@ function autocomplete({editor, position, offset, input, root, path}) {
   if (atom.config.get('gobottle.gocode') && !gocodePanicked) {
     return run('which', ['gocode'])
           .then(() => {
-                  const relpath = pathutil.relative(root, path);
-                  const tool = 'gocode -f=json autocomplete ' + relpath + ' ' + offset;
-                  return run('bottle', ['--tool', tool, root], {input})
+                  const relpath = pathutil.relative(root, path);1
+                  const args = ['exec', 'gocode', '-f=json', 'autocomplete', relpath, offset];
+                  return run('bottle', args, {input, cwd: root})
                         .then((output) => {
                           const suggest = gocode.mapMessages(output, editor, position)
                           if (suggest[0] && suggest[0].type == "panic") {
@@ -64,7 +64,7 @@ function autocomplete({editor, position, offset, input, root, path}) {
                         .catch(() => {});
                 },
                 () => console.log('gobottle: could not find gocode'))
-          .catch(() => console.log('gobottle: error running gocode'));
+          .catch((err) => console.log('gobottle: error running gocode', err));
   }
   return Promise.resolve();
 }
@@ -75,8 +75,8 @@ function format({editor, root, path}, linter) {
       return run('which', ['goimports'])
             .then(() => {
                     const relpath = pathutil.relative(root, path);
-                    const tool = 'goimports -w ' + relpath;
-                    return run('bottle', ['--tool', tool, root])
+                    const args = ['exec', 'goimports', '-w', relpath];
+                    return run('bottle', args, {cwd: root})
                           // .then((output) => atom.notifications.addSuccess("Imports updated"))
                           .catch(() => {});
                   },
@@ -91,9 +91,9 @@ function format({editor, root, path}, linter) {
 }
 
 function lint(context, linter) {
-  const {editor, root, path} = context;
+  const {editor, root} = context;
   const regexp = '(?<file>[A-Za-z0-9\\-_.][A-Za-z0-9\\-_./ ]*\.go):(?<line>\\d+):((?<col>\\d+):)? (?<message>(.*(\n\t)?)*)';
-  const promise = linter.exec('bottle', [path], {stream: 'both', allowEmptyStderr: true});
+  const promise = linter.exec('bottle', ['build'], {cwd: root, stream: 'both', allowEmptyStderr: true});
   return promise.then(({stdout, stderr}) => {
     // figure out where we are for project-relative file paths
     const location = atom.project.getPaths()
@@ -149,7 +149,8 @@ export default {
         context.editor = editor;
         context.offset = Buffer.byteLength(text.substring(0, index), 'utf8');
         context.position = bufferPosition;
-        return which(context).then(() => autocomplete(context));
+        return which(context.path).then((root) => { if (root) context.root = root; })
+              .then(() => autocomplete(context));
         // return Promise.resolve([]);
       }
     }
@@ -163,7 +164,7 @@ export default {
       lintOnFly: false,
       lint(editor) {
         const context = {root: '', path: editor.getPath(), editor: editor, messages: []};
-        return which(context)
+        return which(context.path).then((root) => { if (root) context.root = root; })
               .then(() => format(context, linter))
               .then(() => lint(context, linter));
       }

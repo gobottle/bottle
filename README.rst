@@ -1,12 +1,14 @@
-***********************************
-Bottle: an unassuming Go build tool
-***********************************
+*************************************
+Bottle: a less assuming Go build tool
+*************************************
 
 Bottle is a Go build tool that doesn't force your dependencies to be at well-known
 inflexible filepaths (like in a Go workspace, or the vendor/ directory).
 
 Bottle treats each directory as one package (library or executable), and puts
 dependencies and project information into the `Bottle.toml` config file.
+
+TLDR; Bottle was built for private packages and may or may not suit your use cases.
 
 .. image:: https://img.shields.io/badge/release-alpha-orange.svg
 

@@ -1,0 +1,13 @@
+[package]
+name = "pkgdeps"
+version = "1.0.0"
+repository = "https://example.pizza/pkg/pkgdeps"
+publish = true
+
+[dependencies]
+"anything/from.path" = { path = "../simple" }
+"anything/from.git" = { git = "https://github.com/boltdb/bolt.git" }
+"gopkg.in/yaml.v1" = {}
+"golang.org/x/crypto/ssh" = {}
+"golang.org/x/tools/cmd/goimports" = { install = true }
+"golang.org/x/tools/cmd/gorename" = { install = true }

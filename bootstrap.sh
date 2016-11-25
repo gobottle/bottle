@@ -30,11 +30,12 @@ done
 
 if [ "$SHOULD_UNINSTALL" = true ]; then
   rm "$PREFIX/bin/bottle"
+  exit
 fi
 
 # setup golang workspace
 mkdir -p $WORKSPACE
-rsync -rum --delete --exclude ".*" . $WORKSPACE
+rsync -rum --delete --exclude ".*" src/ $WORKSPACE
 if [ "$SHOULD_INSTALL" = false ]; then
   if [ -e .go/bin/bottle ]; then
     rm -f .go/bin/bottle
@@ -43,9 +44,6 @@ fi
 
 # build golang binary
 cd $WORKSPACE
-#find . -type f -name '*.go' | xargs sed -i 's|<NICE_IMPORT>|<UGLY_IMPORT>|g'
-find . -type f -name '*.go' | xargs sed -i.orig -e 's|encoding/toml|github.com/reflexionhealth/toml|g'
-rm *.orig **/*.orig
 GOPATH=$GOPATH go get -d ./...
 GOPATH=$GOPATH go install .
 cd $PROJECT

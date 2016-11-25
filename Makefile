@@ -1,4 +1,4 @@
-.PHONY: all build install uninstall clean
+.PHONY: all build install uninstall clean fmt
 
 all: build
 
@@ -13,3 +13,6 @@ uninstall:
 
 clean:
 	rm -r .go
+
+fmt:
+	bottle exec go fmt ./...

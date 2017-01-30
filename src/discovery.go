@@ -54,7 +54,10 @@ func discoverPackage(mayberoot, maybecfg string, searchParents bool) (*Config, e
 	if searchParents {
 		pkgroot, cfgpath = findNearestConfig(mayberoot, maybecfg)
 	}
-	if len(pkgroot) == 0 || !shutil.Exists(pkgroot) {
+	if len(pkgroot) == 0 {
+		return nil, fmt.Errorf(`discoverPackage: unknown package root for "%s"`, shutil.Abspath(mayberoot))
+	}
+	if !shutil.Exists(pkgroot) {
 		return nil, fmt.Errorf(`discoverPackage: no such directory "%s"`, pkgroot)
 	}
 
@@ -107,9 +110,9 @@ loop:
 		default:
 			env := shutil.Env()
 			if len(env["GOPATH"]) > 0 && shutil.IsSubdir(origRoot, env["GOPATH"]) {
-				mayberoot = origRoot
-				maybecfg = ""
-				break loop
+				return origRoot, ""
+			} else {
+				return "", ""
 			}
 		}
 	}

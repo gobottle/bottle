@@ -86,7 +86,7 @@ Options:
 
 Warning:
   This is currently SUPER special-cased for publishing "gobottle/bottle"
-  specificaly, and it probably won't be very useful for most projects.
+  specifically, and it probably won't be very useful for most projects.
 
   If you'd like to share some ideas about how to implement more-generic
   publishing, write up a detailed description in a GitHub issue.`)

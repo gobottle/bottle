@@ -9,8 +9,11 @@ function run(cmd, args = [], options = {}) {
     let stderr = "";
     let stdout = "";
 
+    let opts = Object.assign({}, options);
+    delete opts.input;
+
     const child = new BufferedProcess({
-      command: cmd, args: args,
+      command: cmd, args: args, options: opts,
       stdout: (data) => { stdout += data; },
       stderr: (data) => { stderr += data; },
       exit: (code) => { (code == 0) ? resolve(stdout) : reject(stderr); }
@@ -61,10 +64,10 @@ function autocomplete({editor, position, offset, input, root, path}) {
                           }
                           return suggest;
                         })
-                        .catch(() => {});
+                        .catch((err) => console.log('gobottle: error running gocode:', err));
                 },
                 () => console.log('gobottle: could not find gocode'))
-          .catch((err) => console.log('gobottle: error running gocode', err));
+          .catch((err) => console.log('gobottle: error running gocode:', err));
   }
   return Promise.resolve();
 }
@@ -78,10 +81,10 @@ function format({editor, root, path}, linter) {
                     const args = ['exec', 'goimports', '-w', relpath];
                     return run('bottle', args, {cwd: root})
                           // .then((output) => atom.notifications.addSuccess("Imports updated"))
-                          .catch(() => {});
+                          .catch((err) => console.log('gobottle: error running goimports:', err));
                   },
                   () => console.log('gobottle: could not find goimports'))
-            .catch(() => console.log('gobottle: error running goimports'));
+            .catch((err) => console.log('gobottle: error running goimports:', err));
     }
 
     // TODO: maybe support `go fmt` as a fallback (or default?) option
